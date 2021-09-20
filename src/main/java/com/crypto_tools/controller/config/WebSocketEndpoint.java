@@ -1,160 +1,76 @@
 package com.crypto_tools.controller.config;
 
-import com.crypto_tools.controller.WebSocketServer;
-import com.crypto_tools.exchangapi.CallBack;
-import com.crypto_tools.exchangapi.ExchangeFactory;
-import com.crypto_tools.exchangapi.okex.websocket.OkexTickersResp;
-import com.crypto_tools.exchangapi.okex.websocket.OkexWebSocketClient;
+import com.crypto_tools.controller.WebSocketDispatcher;
+import com.crypto_tools.service.impl.ServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
-import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@ServerEndpoint(value = "/ws/{userid}`")
+@ServerEndpoint(value = "/marketStream")
 @Component
 public class WebSocketEndpoint {
-
     //クライアントとのセッションで、これを通してクライアントにデータ送信
-    private Session session;
-
-    public void init() {
-        System.out.println("websocke加载");
-    }
-
-    private static Logger log = LoggerFactory.getLogger(WebSocketServer.class);
+    private static Logger log = LoggerFactory.getLogger(WebSocketEndpoint.class);
     private static final AtomicInteger onLineCount= new AtomicInteger(0);
-
-    private static CopyOnWriteArraySet<Session> SessionSet = new CopyOnWriteArraySet<Session>();
 
 
     /**
-     * 接続出来た後働くメソッド
+     * 接続出来た
      * @PathParam は変数 URI パスフラグメントをメソッド呼び出しへマップできるようにします。
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("userId")String userId) throws InterruptedException {
-        SessionPool.sessions.put(userId,session);
-
-
-        System.out.println("hello");
-        OkexWebSocketClient webSocketClient = (OkexWebSocketClient) ExchangeFactory.createExchangeFactory().createOkexClients().createWebSocketClient();
-
-        webSocketClient.MarketTickersEvent(new CallBack<OkexTickersResp>() {
-            @Override
-            public void onResponse(OkexTickersResp var1) {
-                System.out.println(Arrays.toString(var1.getData()));
-            }
-
-
-            @Override
-            public void onFailure(Throwable cause) {
-                System.out.println(cause);
-            }
-        });
-
-
-
-
-        SessionSet.add(session);
-
+    public void onOpen(Session session) throws InterruptedException, IOException {
+        //新しい接続ごとにID生成して、送信を行う
+        String userId;
+        userId = SessionPool.getUserId();
+        SessionPool.addSessions(userId,session);
+        SessionPool.sendMessage(userId,"userId:"+userId);
+        log.info("User ID:" + userId + "の方が接続しています");
         int cnt = onLineCount.incrementAndGet(); // 在线数加1
-        log.info("有连接加入，当前连接数为：{}", cnt);
-        SendMessage(session, "连接成功");
-        while (true){
-            Thread.sleep(2000);
-        }
+        log.info("今の人数は"+cnt);
+        WebSocketDispatcher.sendFirst(userId);
     }
 
     /**
-     * 接続が切った後働くメソッド
+     * 接続を切られた
      */
     @OnClose
-    public void onClose(Session session) throws IOException {
-        SessionPool.close(session.getId());
-        SessionSet.remove(session);
+    public void onClose() throws IOException {
         int cnt = onLineCount.decrementAndGet();
-        log.info("有连接关闭，当前连接数为：{}", cnt);
+        log.info("User ID:" + SessionPool.checkLive() +"の接続が切られました、今の人数は"+cnt);
     }
 
     /**
-     * クライアントからmessageを受けた後働くメソッド
+     *
      *
      * @param message
-     *            客户端发送过来的消息
+     * クライアントからのmessage
      */
     @OnMessage
-    public void onMessage(String message, Session session) {
-        SessionPool.sendMessage(message);
-        log.info("来自客户端的消息：{}",message);
-        SendMessage(session, "收到消息，消息内容："+message);
+    public void onMessage(String message) throws IOException, InterruptedException {
+        String userId_FromBrowse = "";
+        //ブラウザから送信したuserIDをgetし、これを元に送信を行う
+        if(message.contains("userId:")){ userId_FromBrowse = message.substring(8); }
 
+        WebSocketDispatcher.dispatcher(userId_FromBrowse,message);
+        log.info("クライアントからのメッセージ: {}",message);
     }
 
     /**
      * エラー
-     * @param session
      * @param error
      */
     @OnError
-    public void onError(Session session, Throwable error) {
-        log.error("发生错误：{}，Session ID： {}",error.getMessage(),session.getId());
+    public void onError(Throwable error) {
+        log.error("エラー発生");
         error.printStackTrace();
     }
 
-    /**
-     * 发送消息，实践表明，每次浏览器刷新，session会发生变化。
-     * @param session
-     * @param message
-     */
-    public static void SendMessage(Session session, String message) {
-        try {
-//            session.getBasicRemote().sendText(String.format("%s (From Server，Session ID=%s)",message,session.getId()));
-            session.getBasicRemote().sendText(message);
-        } catch (IOException e) {
-            log.error("发送消息出错：{}", e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
-    /**
-     * 群发消息
-     * @param message
-     * @throws IOException
-     */
-    public static void BroadCastInfo(String message) throws IOException {
-        for (Session session : SessionSet) {
-            if(session.isOpen()){
-                SendMessage(session, message);
-            }
-        }
-    }
 
-    /**
-     * 指定Session发送消息
-     * @param sessionId
-     * @param message
-     * @throws IOException
-     */
-    public static void SendMessage(String message,String sessionId) throws IOException {
-        Session session = null;
-        for (Session s : SessionSet) {
-            if(s.getId().equals(sessionId)){
-                session = s;
-                break;
-            }
-        }
-        if(session!=null){
-            SendMessage(session, message);
-        }
-        else{
-            log.warn("没有找到你指定ID的会话：{}",sessionId);
-        }
-    }
 }
