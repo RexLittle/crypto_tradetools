@@ -1,9 +1,9 @@
 # 仮想通貨取引ツール
 取引所Binance、Okex、KuCoinのコイン値段の確認と比べが出来るサイトです。
 # 経緯
-自分が今まで学んだ内容を復習するため、何らかのポートフォリオ作成しょうと思ったら、仮想通貨取引所の価額をまとめたアプリがあればいいと思って、このサイトを作成することになりました。
+自分が学習するため、何らかのポートフォリオ作成しょうと思ったら、仮想通貨取引所の価額をまとめたアプリがあればいいと思って、このサイトを作成することになりました。
 # サイトURL
-
+  また未完成です.
 # 使用技術
 - Java11
   - jackson 2.5.0
@@ -21,7 +21,14 @@
 - 取引所3社のコイン値段確認
 - 取引所3社のコイン値段比べ
 # ExchangeApi構造
-# 苦労したところ
+  ![ExchangeApi構造](https://github.com/RexLittle/crypto_tradetools/blob/main/ExchangeApiClassUml.jpg)
+# 工夫したところ
+  - 取引所3社兼用のapiを作成するため、FactoryMethod パターンで構造を作成した。
+
+# 今後やっていきたいこと
+  - ExchangeApiでwebsocketクライアント複数開く際、Threadの問題で普通にクライアント閉じることが出来なかった。api構造を全体的に見直して、作り直し必要がある
+  - Exception対策もっと増やす
+  - websiteがサーバーから受信する際、データの量があまりも多く、テーブルがリアルタイムデータ更新するのが難しいので、これも解決する必要がある
 # 参照先URL
 
   ExchangeApi参照先:https://github.com/binance-exchange/binance-java-api
