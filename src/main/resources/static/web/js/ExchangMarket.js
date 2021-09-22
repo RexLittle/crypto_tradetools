@@ -1,136 +1,247 @@
+var socket;
+var intervalPing;
+var intervalPong;
+var pong;
+var lockReconnect = false;
+var wsCreateHandler;
+var exchange = "binance";
+var str;
+var jsonObj;
+var id = null;
+var woqu;
+
+//below 6 var are json's dataname
+var pair;
+var lastPrice;
+var _24hChanges;
+var _24hHigh;
+var _24hLow;
+var _24hVolume;
+var fragment = document.createDocumentFragment();
+
 window.onload=function() {
-
-        <!-- ドロップダウンメニューにhoverをつける -->
-        function hover(ele, fn1,fn2) {
-            ele.onmouseenter = function(){
-                fn1.call(ele);
-            }
-            document.getElementById("out").onmouseleave  = function() {
-                fn2.call(ele);
-            }
+    woqu = document.getElementById("myTable");
+    <!-- ドロップダウンメニューにhoverを操作 -->
+    function hover(ele, fn1,fn2) {
+        ele.onmouseenter = function(){
+            fn1.call(ele);
         }
-
-        var menu_btm = document.getElementById("in");
-        hover(
-        menu_btm,
-         function(){
-            menu_btm.click();
-        },
-        function(){
-            menu_btm.click();
-        })
-
-
-
-    <!-- マーケットデータの取得 -->
-     var socket;
-        if (typeof (WebSocket) == "undefined") {
-            console.log("遗憾：您的浏览器不支持WebSocket");
-        } else {
-            console.log("恭喜：您的浏览器支持WebSocket");
-            //实现化WebSocket对象
-            //指定要连接的服务器地址与端口建立连接
-            //注意ws、wss使用不同的端口。我使用自签名的证书测试，
-            //无法使用wss，浏览器打开WebSocket时报错
-            //ws对应http、wss对应https。
-            socket = new WebSocket("ws://localhost:8081/ws/asset");
-            //连接打开事件
-            socket.onopen = function() {
-                console.log("Socket 已打开");
-                socket.send("消息发送测试(From Client)");
-            };
-            //收到消息事件
-            socket.onmessage = function(msg) {
-                $("#messageId").append(msg.data+ "\n");
-                console.log(msg.data  );
-            };
-            //连接关闭事件
-            socket.onclose = function() {
-                console.log("Socket已关闭");
-            };
-            //发生了错误事件
-            socket.onerror = function() {
-                console.log("Socket发生了错误");
-            }
-            //窗口关闭时，关闭连接
-            window.unload=function() {
-                socket.close();
-            };
+        document.getElementById("out").onmouseleave  = function() {
+            fn2.call(ele);
         }
+    }
+    var menu_btm = document.getElementById("in");
+    hover(
+    menu_btm,
+     function(){
+        menu_btm.click();
+    },
+    function(){
+        menu_btm.click();
+    })
+
+    createWebSocket();
 
 
 
-//XMLHttpRequestオブジェクトがバックエンドでサーバーとデータのやり取り
-        $('.dropdown-toggle').dropdown();
-        function ObjData(symbol, exchange1Price, exchange2Price) {
-            this.symbol = symbol;
-            this.exchange1Price = exchange1Price;
-            this.exchange2Price = exchange2Price;
-        }
 
-<!-- マーケットデータの反映 -->
-        var xhr;
-        var jsonStr;
-        var jsonObj;
-             if(window.XMLHttpRequest) {
-                       xhr = new XMLHttpRequest();
-                    }
-                    else
-                    {
-                       xhr=new ActiveXObject("Microsoft.XMLHTTP");
-                    }
-
-                    xhr.open("GET","http://localhost:8081/arbitrage",true);
-                    xhr.send();
-                    xhr.onreadystatechange = function() {
-                          // readyState == 4リクエスト成功
-                                  if(xhr.readyState==4) {
-                                      if(xhr.status==200 || xhr.status==304){
-                                            var jsonStr = xhr.responseText;
-                                            var jsonObj = eval('(' + jsonStr + ')');
-                                            var ex1;
-                                            var ex2;
-                                            var numLength;
-                                            var percent;
-                                            var difference;
-                                                var data = "<tr>" +
-                                                            "<td>通貨名</td>" +
-                                                            "<td>Binance</td>" +
-                                                            "<td>Bithumb</td>" +
-                                                            "<td>スプレッド</td>" +
-                                                            "<td>パーセンテージ</td>" +
-                                                            "</tr>";
-                                                 //行数Num指定
-                                                 for(var i = 1; i <= jsonObj.length; i++) {
-                                                     ex1 = parseFloat(jsonObj[i-1].exchange1Price);
-                                                     ex2 = parseFloat(jsonObj[i-1].exchange2Price);
-
-                                                     if(jsonObj[i-1].exchange1Price < jsonObj[i-1].exchange2Price) {
-                                                           numLength = ex1.toString().substring(ex1.toString().indexOf('.'),ex1.toString().length).length;
-                                                           difference = Math.abs(ex2 - ex1).toFixed(numLength);;
-                                                           percent = (difference/ex1 * 100).toFixed(2);
-                                                     } else {
-                                                           numLength = ex2.toString().substring(ex2.toString().indexOf('.'),ex2.toString().length).length;
-                                                           difference = Math.abs(ex1 - ex2).toFixed(numLength);;
-                                                           percent = (difference/ex2 * 100).toFixed(2);
-                                                     }
-                                                     data += "<tr>";
-                                                     data += "<td>" + jsonObj[i-1].symbol +"</td>";
-                                                     data += "<td>" + ex1 +"</td>";
-                                                     data += "<td>" + ex2 +"</td>";
-                                                     data += "<td>" + difference + "</td>";
-
-
-                                                     data += "<td>" + percent +"%</td>";
-                                                     data += "</tr>";
-                                                 }
-                                                 document.getElementById("myTable").innerHTML = data;
-                                      }
-                    }
-        }
+//        var jsonStr = xhr.responseText;
+//        var jsonObj = eval('(' + jsonStr + ')');
+//        var ex1;
+//        var ex2;
+//        var numLength;
+//        var percent;
+//        var difference;
+//            var data = "<tr>" +
+//                        "<td>通貨名</td>" +
+//                        "<td>Binance</td>" +
+//                        "<td>Bithumb</td>" +
+//                        "<td>スプレッド</td>" +
+//                        "<td>パーセンテージ</td>" +
+//                        "</tr>";
+             //行数Num指定
+//             for(var i = 1; i <= jsonObj.length; i++) {
+//                 ex1 = parseFloat(jsonObj[i-1].exchange1Price);
+//                 ex2 = parseFloat(jsonObj[i-1].exchange2Price);
+//
+//                 if(jsonObj[i-1].exchange1Price < jsonObj[i-1].exchange2Price) {
+//                       numLength = ex1.toString().substring(ex1.toString().indexOf('.'),ex1.toString().length).length;
+//                       difference = Math.abs(ex2 - ex1).toFixed(numLength);;
+//                       percent = (difference/ex1 * 100).toFixed(2);
+//                 } else {
+//                       numLength = ex2.toString().substring(ex2.toString().indexOf('.'),ex2.toString().length).length;
+//                       difference = Math.abs(ex1 - ex2).toFixed(numLength);;
+//                       percent = (difference/ex2 * 100).toFixed(2);
+//                 }
+//                 data += "<tr>";
+//                 data += "<td>" + jsonObj[i-1].symbol +"</td>";
+//                 data += "<td>" + ex1 +"</td>";
+//                 data += "<td>" + ex2 +"</td>";
+//                 data += "<td>" + difference + "</td>";
+//
+//
+//                 data += "<td>" + percent +"%</td>";
+//                 data += "</tr>";
+//             }
+//             document.getElementById("myTable").innerHTML = data;
 
 
 }
+
+
+//ベースとなるテーブルを追加
+function addDataInTable(array){
+
+//                  console.log("原来");
+//                  console.log(lastPrice);
+//                  console.log("现在");
+//                  console.log(parseFloat(lastPrice));
+//                  console.log("原来");
+//                  console.log(_24hHigh)
+//                  console.log("现在");
+//                  console.log(parseFloat(_24hHigh))
+//                  console.log("原来");
+//                  console.log(_24hLow)
+//                  console.log("现在");
+//                  console.log(parseFloat(_24hLow))
+//                  console.log("原来");
+//                  console.log(_24hVolume)
+//                  console.log("现在");
+//                  console.log(parseFloat(_24hVolume))
+
+
+//        var djj = document.getElementById("myTable");
+//        var childs = document.getElementById("myTable").childNodes;
+//        for(var i = 0;i < childs.length;i++){
+//            alert(childs[i])
+//            document.getElementById("myTable").removeChild(childs[i]);
+//        }
+//
+//        while(djj.hasChildNodes()){
+//            djj.removeChild(djj.firstChild);
+//        }
+
+        str = "";
+           for(i = 0, len = array.length; i < len; i++){
+
+                  jsonObj = array[i];
+                    for(var name in jsonObj){
+                          switch(name){
+                              case "pair":
+                                  pair = jsonObj["pair"];
+                                  break;
+                              case "lastPrice":
+                                  lastPrice = parseFloat(jsonObj["lastPrice"]);
+                                  break;
+                              case "_24hChanges":
+                                  _24hChanges = parseFloat(jsonObj["_24hChanges"]);
+                                  break;
+                              case "_24hVolume":
+                                  _24hVolume = parseFloat(jsonObj["_24hVolume"]);
+                                  break;
+                              default: break;
+                          }
+                  }
+
+                   str += "<tr>" +
+                          "<td class= \"d-none d-lg-table-cell\">"+ pair + "</td>" +
+                          "<td class= \"d-none d-lg-table-cell\">"+ lastPrice + "</td>" +
+                          "<td class= \"d-none d-lg-table-cell\">"+ _24hChanges + "</td>" +
+                          "<td class= \"d-none d-lg-table-cell\">"+ _24hVolume + "</td>" +
+                          "<tr>";
+
+                document.getElementById("mtTable").innerHTML = str;
+           }
+
+}
+
+
+
+function modifyTable(){
+//requestAnimationFrame(()=>{
+//woqu.innerHTML = "";
+//});
+//setTimeout(woqu.innerHTML = str, 4000 )
+
+}
+
+
+
+function createWebSocket(){
+    if (typeof (WebSocket) == "undefined") {
+        alert("ご利用されてるブラウザがwebsocketをサポートしてません");
+    } else {
+        try{
+            socket = new WebSocket("ws://localhost:8080/marketStream/binance");
+            initWSEventHandle();
+        }catch(e){
+            reConnect();
+        }
+    }
+}
+
+
+function initWSEventHandle(){
+
+    try{
+         //接続できた
+            socket.onopen = function() {
+                console.log("サーバーへの接続出来ました");
+            };
+            //messageを受けたs
+            socket.onmessage = function(msg) {
+                console.log(msg.data);
+                 if(msg.data == "ping"){
+                    sendMessage("pong");
+                }else if(msg.data.search("userId:") != -1){
+                    id = msg.data;
+                }else{
+                    addDataInTable(eval('(' + msg.data + ')'));
+                }
+                modifyTable();
+
+
+            };
+            //接続切断
+            socket.onclose = function() {
+                console.log("Socketが閉じました");
+            };
+            //エラー発生
+            socket.onerror = function() {
+                console.log("エラー発生、再接続中");
+            }
+            //ウインドウ閉じる際、接続を切断
+            window.unload=function() {
+                socket.close();
+            };
+    }catch(e){
+        reConnect();
+    }
+
+
+}
+
+function reConnect() {
+    if(lockReconnect) {
+        return;
+    };
+
+    lockReconnect = true;
+    createWebSocket && clearTimeout(wsCreateHandler);
+    wsCreateHandler = setTimeout(function (){
+        console.log("再接続中");
+        createWebSocket();
+        lockReconnect = false;
+    }, 1000);
+
+}
+
+//他のクライアントと分けるのためid先に送信
+function sendMessage(Str){
+    socket.send(id + Str);
+}
+
+
 
 
 <!-- 疑似要素の変更 -->
@@ -148,7 +259,7 @@ function sort(obj) {
     }
 }
 
-function keepdropdown() {
+function keepDropdown() {
         document.getElementById("in").click();
 }
 
@@ -161,6 +272,20 @@ var btm1;
 var btm2;
 function tabChg_GetData(ele){
     if(ele.className.indexOf("active")  == -1) {
+          if(socket.readyState === 1) {
+                exchange =  ele.innerHTML.toLowerCase();
+                socket.close();
+                setTimeout(()=>{
+                    if(exchange == "binance"){
+                        socket = new WebSocket("ws://localhost:8080/marketStream/binance");
+                    }else if(exchange == "okex"){
+                        socket = new WebSocket("ws://localhost:8080/marketStream/okex");
+                    }else if(exchange == "kucoin"){
+                        socket = new WebSocket("ws://localhost:8080/marketStream/kucoin");
+                    }
+                },10000)
+
+            }
         if(times == null && btm2 == null){
             document.getElementById("firstTab").classList.remove("active");
             btm1 = ele;
@@ -177,9 +302,8 @@ function tabChg_GetData(ele){
             btm2.classList.add("active");
             times = 0;
         }
-
-
     }
+
 
 
 
@@ -188,46 +312,6 @@ function tabChg_GetData(ele){
 
 function chgMenuName(ele) {
     document.getElementById("in").innerHTML = ele.innerHTML;
-}
-
-<!-- サーバ接続 -->
-function connectServer() {
-    <!-- マーケットデータの取得 -->
-     var socket;
-        if (typeof (WebSocket) == "undefined") {
-            console.log("申し訳ございません：ご利用されているブラウザがWebSocketをサポートしていません");
-        } else {
-            //实现化WebSocket对象
-            //指定要连接的服务器地址与端口建立连接
-            //注意ws、wss使用不同的端口。我使用自签名的证书测试，
-            //无法使用wss，浏览器打开WebSocket时报错
-            //ws对应http、wss对应https。
-
-            var url = "ws://localhost:8081/ws/"
-            socket = new WebSocket("ws://localhost:8081/ws/binance");
-            //连接打开事件
-            socket.onopen = function() {
-                console.log("Socket 已打开");
-                socket.send("消息发送测试(From Client)");
-            };
-            //收到消息事件
-            socket.onmessage = function(msg) {
-                $("#messageId").append(msg.data+ "\n");
-                console.log(msg.data  );
-            };
-            //连接关闭事件
-            socket.onclose = function() {
-                console.log("Socket已关闭");
-            };
-            //发生了错误事件
-            socket.onerror = function() {
-                console.log("Socket发生了错误");
-            }
-            //窗口关闭时，关闭连接
-            window.unload=function() {
-                socket.close();
-            };
-        }
 }
 
 
