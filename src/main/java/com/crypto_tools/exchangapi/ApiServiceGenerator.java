@@ -2,11 +2,13 @@ package com.crypto_tools.exchangapi;
 
 import com.binance.api.client.BinanceApiError;
 import com.binance.api.client.security.AuthenticationInterceptor;
+import com.crypto_tools.controller.config.SessionPool;
 import com.crypto_tools.exchangapi.binance.rest.BinanceRestUrlList;
 import com.crypto_tools.exchangapi.huobi.rest.HuobiRestUrlList;
 import com.crypto_tools.exchangapi.huobi.rest.HuobiTickerResp;
 import com.crypto_tools.exchangapi.kucoin.rest.KuCoinRestUrlList;
 import com.crypto_tools.exchangapi.okex.rest.OkexRestUrlList;
+import com.crypto_tools.exchangapi.okex.rest.OkexTickerData;
 import com.crypto_tools.exchangapi.okex.rest.OkexTickerResp;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
@@ -20,21 +22,24 @@ import javax.websocket.Session;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class ApiServiceGenerator {
-    private static final OkHttpClient sharedClient;
+    private static OkHttpClient sharedClient;
     private static final Converter.Factory converterFactory = JacksonConverterFactory.create();
+
+    private static OkHttpClient wbClient;
     private static final Converter<ResponseBody, Error> errorBodyConverter;
-    private static WebSocket webSocket;
-    private static ExchangesWebSocketListener<?> websocketlistener;
+    public static WebSocket webSocket;
+    public static ExchangesWebSocketListener<?> websocketlistener;
+    public static String channelUrl;
+    public static String userId;
+
 
     public static String getExchangeName() {
         return exchangeName;
-    }
-
-    public static void setExchangeName(String exchangeName) {
-        ApiServiceGenerator.exchangeName = exchangeName;
     }
 
     private static String exchangeName;
@@ -84,32 +89,75 @@ public class ApiServiceGenerator {
     }
 
 
-    public static Closeable connectWebSocket(String channel, ExchangesWebSocketListener<?> listener, String exchange) {
-        String streamingUrl = String.format("%s%s", ApiConfig.getStreamBaseUrl(exchange), channel);
-        Request request = new Request.Builder().url(streamingUrl).build();
+    public static synchronized Closeable connectWebSocket(String channel, ExchangesWebSocketListener<?> listener,String exchange) {
+        channelUrl = channel;
         websocketlistener = listener;
         exchangeName = exchange;
+        String streamingUrl = String.format("%s%s", ApiConfig.getStreamBaseUrl(exchange), channel);
+        Request request = new Request.Builder().url(streamingUrl).build();
         webSocket = sharedClient.newWebSocket(request, websocketlistener);
 
         return () -> {
-            listener.onClosing(webSocket, 3000, (String) null);
-            webSocket.close(3000, (String) null);
-            listener.onClosed(webSocket, 3000, (String) null);
+            final int code = 1000;
+            websocketlistener.onClosing(webSocket, code, null);
+            webSocket.close(code, null);
+            websocketlistener.onClosed(webSocket, code, null);
         };
     };
 
+    public static void reConnect(){
+            connectWebSocket(channelUrl,websocketlistener,exchangeName);
+    }
 
+    public static synchronized void close(){
+        final int code = 1000;
+        websocketlistener.onClosing(webSocket, code, null);
+        webSocket.close(code, null);
+        websocketlistener.onClosed(webSocket, code, null);
+    }
 
-    public static void WSBsend(String text){
+    public static synchronized void WSBsend(String text){
+        //okex
         if(exchangeName.equals("okex")){
-            StringBuilder req = new StringBuilder();
-            String inst;
-            OkexTickerResp allTokenBaseData = ExchangeFactory.createExchangeFactory().createOkexClients().createRestClient().getAllTokenBaseData();
-            for (int i = 0; i < allTokenBaseData.getData().length; i++) {
-                inst = allTokenBaseData.getData()[i].getInstId();
-                req.append("{\"channel\":\"tickers\",\"instId\":\""+ inst +"\"},");
+            if(text == null){
+                StringBuilder req = new StringBuilder();
+                String dataTemp;
+                OkexTickerData[] allTickerBaseData = ExchangeFactory.createExchangeFactory().createOkexClients().createRestClient().getAllTokenBaseData().getData();
+                int dataLength = ExchangeFactory.createExchangeFactory().createOkexClients().createRestClient().getAllTokenBaseData().getData().length;
+                int times;
+                int sendAmount;
+                int position = -1;
+
+                //送信回数計算,args部分の送信制限1回あたり4090 byteまで
+                for (int i = 0; i < dataLength; i++) {
+                    dataTemp = allTickerBaseData[i].getInstId();
+                    req.append("{\"channel\":\"tickers\",\"instId\":\""+ dataTemp +"\"},");
+                }
+                times = req.substring(0,req.length() - 1).getBytes().length / 4090 + 1;
+                sendAmount = (dataLength - dataLength % times) / times;
+                req.setLength(0);
+
+                //データバイトの制限あるため数回に分けて送信
+                for (int i = 0; i < 5; i++) {
+                    //始めの5回
+                    for (int j = 0; j < sendAmount; j++) {
+                        dataTemp = allTickerBaseData[++position].getInstId();
+                        req.append("{\"channel\":\"tickers\",\"instId\":\""+ dataTemp +"\"},");
+                    }
+                    webSocket.send("{\"op\"" + ":" + "\"subscribe\",\"args\"" + ":" +"["+ req.substring(0,req.length() - 1) +"]}");
+                    req.setLength(0);
+                }
+
+                //残りの1回
+                for (int k = 0; k <  sendAmount + dataLength % 6; k++) {
+                    dataTemp = allTickerBaseData[++position].getInstId();
+                    req.append("{\"channel\":\"tickers\",\"instId\":\""+ dataTemp +"\"},");
+                }
+                webSocket.send("{\"op\"" + ":" + "\"subscribe\",\"args\"" + ":" +"["+ req.substring(0,req.length() - 1) +"]}");
+            }else if(text.equalsIgnoreCase("ping")){
+                webSocket.send(text);
             }
-            webSocket.send("{\"op\"" + ":" + "\"subscribe\",\"args\"" + ":" +"["+ req.substring(0,req.length() - 1) +"]}");
+        //huobi
         } else if(exchangeName.equals("huobi")) {
             StringBuilder req = new StringBuilder();
             String inst;
@@ -124,11 +172,21 @@ public class ApiServiceGenerator {
 
             System.out.println(req.substring(0,req.length() - 2));
             webSocket.send("{\"sub\":\"market.btcusdt.ticker\"}");
+        //kucoin
         } else if(exchangeName.equals("kucoin")){
 
-            webSocket.send("{\"id\":\""+ text.substring(7,text.indexOf(",")-1) +"\", \"type\":\"subscribe\", \"topic\":\"/market/ticker:all\", \"privateChannel\":false, \"response\":false }");
+            if(text.contains("TickersLastPrice")){
+                webSocket.send("{\"id\":\""+ text.substring(7,text.indexOf(",")-1) +"\", \"type\":\"subscribe\", \"topic\":" +
+                        "\"/market/ticker:all\", \"privateChannel\":false, \"response\":false }");;
+            }else if(text.contains("Market")){
+                webSocket.send("{\"id\":\""+ text.substring(7,text.indexOf(",")-1) +"\", \"type\":\"subscribe\", \"topic\":" +
+                        "\"/market/snapshot:USDS,BTC,KCS,ALTS\", \"privateChannel\":false, \"response\":false }");
+            }
+
         }
     }
+
+
 
     public static Error getApiError(Response<?> response) throws IOException, Exception {
         return (Error)errorBodyConverter.convert(response.errorBody());
@@ -136,15 +194,12 @@ public class ApiServiceGenerator {
 
 
 
-    public static OkHttpClient getSharedClient() {
-        return sharedClient;
-    }
 
     static {
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequestsPerHost(500);
         dispatcher.setMaxRequests(500);
-        sharedClient = (new okhttp3.OkHttpClient.Builder()).dispatcher(dispatcher).pingInterval(5, TimeUnit.SECONDS).build();
-        errorBodyConverter = (Converter<ResponseBody, Error>) converterFactory.responseBodyConverter(BinanceApiError.class, new Annotation[0], (Retrofit)null);
+        sharedClient = (new okhttp3.OkHttpClient.Builder()).dispatcher(dispatcher).pingInterval(120, TimeUnit.SECONDS).build();
+        errorBodyConverter = (Converter<ResponseBody, Error>) converterFactory.responseBodyConverter(Error.class, new Annotation[0], (Retrofit)null);
     }
 }
