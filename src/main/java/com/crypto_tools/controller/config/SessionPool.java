@@ -71,43 +71,49 @@ public class SessionPool {
      * @param message
      */
     public static void sendMessage(String userId, String message) {
-
             Session session = sessions.get(userId);
-            synchronized(session) {
-                try{
-                session.getBasicRemote().sendText(message);
-//            session.getAsyncRemote().sendText(message);
-                } catch(IOException e){
-                    log.info("セッション:{"+userId+"}が切断されました");
+
+            try{
+                synchronized(session){
+                    try{
+                        session.getBasicRemote().sendText(message);
+                    } catch(IOException e){
+                        System.out.println(userId);
+                        log.info("User ID:{"+userId+"}に送信できません");
+                    }
+
                 }
+
+            } catch(NullPointerException e){
+                System.out.println(userId);
+                log.info("User ID:{"+userId+"}に送信できません");
             }
+
 
 
     }
 
     /**
-     * 全員ping配信
+     * session繋がってるかを確認
      */
     public static String checkLive()  {
             for(String userId : SessionPool.sessions.keySet())
         {
                 if(!SessionPool.sessions.get(userId).isOpen()){
-                    log.info("セッション:{"+userId+"}が切断されました");
-                    try{
-                        WebSocketDispatcher.closeWBClient_Exchange(userId);
-                    }catch(IOException d){
-                        d.printStackTrace();
-                    }
+                    log.info("user ID:{"+userId+"}が切断されました");
+//                    try{
+//                        WebSocketDispatcher.closeWBClient_Exchange();
+//                    }catch(IOException | InterruptedException d){
+//                        d.printStackTrace();
+//                    }
                     SessionPool.sessions.remove(userId);
                     return userId;
                 }
 
-
-
-
         }
         return null;
     }
+
 
 
 

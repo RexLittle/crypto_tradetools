@@ -10,4 +10,7 @@ public interface BinanceRestUrlList {
 
     @GET("/api/v1/ticker/allPrices")
     Call<List<BinanceTickeResp>> getAllTokenBaseData();
+
+    @GET("/api/v3/ticker/24hr")
+    Call<List<Binance24hPriceResp>> get24hPrice();
 }

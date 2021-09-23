@@ -25,8 +25,8 @@ public class OkexTickerEventArg {
     @Override
     public String toString() {
         return "OkexTickerEventArg{" +
-                "channel='" + channel + '\'' +
-                ", instId='" + instId + '\'' +
+                "channel:'" + channel + '\'' +
+                ", instId:'" + instId + '\'' +
                 '}';
     }
 

@@ -8,4 +8,6 @@ public interface OkexRestUrlList {
 
     @GET("/api/v5/market/tickers?instType=SPOT")
     Call<OkexTickerResp> getAllTokenBaseData();
+
+
 }

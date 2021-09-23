@@ -24,9 +24,9 @@ public class OkexTickerResp {
     @Override
     public String toString() {
         return "OkexTickerData{" +
-                "code='" + code + '\'' +
-                ", msg='" + msg + '\'' +
-                ", data=" + Arrays.toString(data) +
+                "code:'" + code + '\'' +
+                ", msg:'" + msg + '\'' +
+                ", data:" + Arrays.toString(data) +
                 '}';
     }
 

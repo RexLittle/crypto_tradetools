@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fragment</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+<script src="js/bootstrap.bundle.js"></script>
+<div class="container">
+
+    <!-- テーブル -->
+    <table class="table table-bordered" id = "tb">
+
+        <thead class="table-light">
+        <tr>
+            <th scope="col" onclick="sort(this)" class="sort-up">ぺーア</th>
+            <th scope="col" onclick="sort(this)" class="sort-up">終値</th>
+            <th scope="col" onclick="sort(this)" class="sort-up d-none d-lg-table-cell">24時間変動</th>
+            <th scope="col" onclick="sort(this)" class="sort-up d-none d-lg-table-cell">24時間最高値</th>
+            <th scope="col" onclick="sort(this)" class="sort-up d-none d-lg-table-cell">24時間最安値</th>
+            <th scope="col" onclick="sort(this)" class="sort-up d-none d-lg-table-cell">24時間取引量</th>
+        </tr>
+        </thead>
+<!--        <tbody id="myTable">-->
+
+<!--        </tbody>-->
+    </table>
+</div>
+
+<button onclick="test1()">test1</button>
+
+
+<button onclick="test2()">test2</button>
+<script>
+  var table = document.getElementById("tb");
+  var tablebody = document.createElement("tbody");
+  tablebody.id = "myTable";
+function test1(){
+    requestAnimationFrame(()=>{
+        var fragment = document.createDocumentFragment();
+        fragment.appendChild(tablebody);
+        var tr;
+        var td;
+        for(i=1; i<=5000; i++){
+            tr = document.createElement("tr");
+             for (j=1; j<=6; j++){
+                 td = document.createElement("td");
+                 td.innerText = "hello fragment";
+                 td.classList.add("d-none");
+                 td.classList.add("d-lg-table-cell");
+                 tr.appendChild(td);
+             }
+             fragment.getElementById("myTable").appendChild(tr);
+        }
+
+
+        table.appendChild(fragment);
+    });
+
+}
+
+
+function test2(){
+    tablebody.remove();
+}
+
+
+</script>
+
+</body>
+</html>

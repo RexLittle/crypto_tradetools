@@ -150,22 +150,22 @@ public class OkexTickerData {
 
     @Override
     public String toString() {
-        return "instType='" + instType + '\'' +
-                ", instId='" + instId + '\'' +
-                ", last='" + last + '\'' +
-                ", lastSz='" + lastSz + '\'' +
-                ", askPx='" + askPx + '\'' +
-                ", askSz='" + askSz + '\'' +
-                ", bidPx='" + bidPx + '\'' +
-                ", bidSz='" + bidSz + '\'' +
-                ", open24h='" + open24h + '\'' +
-                ", high24h='" + high24h + '\'' +
-                ", low24h='" + low24h + '\'' +
-                ", volCcy24h='" + volCcy24h + '\'' +
-                ", vol24h='" + vol24h + '\'' +
-                ", ts='" + ts + '\'' +
-                ", sodUtc0='" + sodUtc0 + '\'' +
-                ", sodUtc8='" + sodUtc8 + '\'' +
+        return "instType:'" + instType + '\'' +
+                ", instId:'" + instId + '\'' +
+                ", last:'" + last + '\'' +
+                ", lastSz:'" + lastSz + '\'' +
+                ", askPx:'" + askPx + '\'' +
+                ", askSz:'" + askSz + '\'' +
+                ", bidPx:'" + bidPx + '\'' +
+                ", bidSz:'" + bidSz + '\'' +
+                ", open24h:'" + open24h + '\'' +
+                ", high24h:'" + high24h + '\'' +
+                ", low24h:'" + low24h + '\'' +
+                ", volCcy24h:'" + volCcy24h + '\'' +
+                ", vol24h:'" + vol24h + '\'' +
+                ", ts:'" + ts + '\'' +
+                ", sodUtc0:'" + sodUtc0 + '\'' +
+                ", sodUtc8:'" + sodUtc8 + '\'' +
                 '}';
     }
 }

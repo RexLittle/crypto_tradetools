@@ -6,13 +6,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class PublicToken {
 
     private String code;
-    private Data data;
+    private RestData data;
 
-    public Data getData() {
+    public RestData getData() {
         return data;
     }
 
-    public void setData(Data data) {
+    public void setData(RestData data) {
         this.data = data;
     }
 

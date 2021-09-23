@@ -68,14 +68,14 @@ public class KuCoinEvent<T> {
 
     @Override
     public String toString() {
-        return "KucoinEvent{" +
-                "id='" + id + '\'' +
-                ", type='" + type + '\'' +
-                ", topic='" + topic + '\'' +
-                ", privateChannel=" + privateChannel +
-                ", response=" + response +
-                ", data=" + data +
-                ", subject='" + subject + '\'' +
+        return "{" +
+                "id:'" + id + '\'' +
+                ", type:'" + type + '\'' +
+                ", topic:'" + topic + '\'' +
+                ", privateChannel:" + privateChannel +
+                ", response:" + response +
+                ", data:" + data +
+                ", subject:'" + subject + '\'' +
                 '}';
     }
 

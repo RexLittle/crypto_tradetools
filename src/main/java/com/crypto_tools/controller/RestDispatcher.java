@@ -1,5 +1,6 @@
 package com.crypto_tools.controller;
 
+import com.crypto_tools.model.ExchangeMarketData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.crypto_tools.model.JsonFormatBean;
@@ -25,6 +26,26 @@ public class RestDispatcher {
 
         ObjectMapper objectMapper = new ObjectMapper();
         return service.Arbitrage();
+    }
+
+    @RequestMapping(value = "/binanceMarket", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public List<ExchangeMarketData> binanceData(){
+        return service.binanceMarkeDataRest();
+    }
+
+
+    @RequestMapping(value = "/okexMarket", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public List<ExchangeMarketData> okexData(){
+        return service.okexMarketDataRest();
+    }
+
+
+    @RequestMapping(value = "/kucoinMarket", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public List<ExchangeMarketData> kucoinData(){
+        return service.kuCoinMarketDataRest();
     }
 
 

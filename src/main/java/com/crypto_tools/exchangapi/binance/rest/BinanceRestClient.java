@@ -14,10 +14,12 @@ public class BinanceRestClient {
         this.binanceRestUrl = ApiServiceGenerator.createService(BinanceRestUrlList.class,apiKey,secret);
     }
 
-
-
     public List<BinanceTickeResp> getAllTokenBaseData() {
         return ApiServiceGenerator.executeSync(binanceRestUrl.getAllTokenBaseData());
+    };
+
+    public List<Binance24hPriceResp> get24hPrice() {
+        return ApiServiceGenerator.executeSync(binanceRestUrl.get24hPrice());
     };
 
 

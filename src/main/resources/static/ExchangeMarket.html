@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <link href="css/style.css" rel="stylesheet">
+
+    <title>通貨相場</title>
+</head>
+<body>
+<!-- Bootstrap Bundle with Popper -->
+<script src="js/bootstrap.bundle.js"></script>
+<script src="js/ExchangMarketRest.js"></script>
+    <!-- header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#" >Crypto</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse"  id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">通貨相場</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">相場比べ</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <br>
+
+
+    <div class="container">
+        <div class="row">
+            <div class="col-3">
+                <div class="btn-group" id = "out" >
+                    <button type="button" id = "in"  onclick="keepDropdown" class="btn  dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        ALL
+                    </button>
+                    <ul class="dropdown-menu" id = "show" >
+                        <li><a onclick="chgMenuName(this)" class="dropdown-item" href="#">ALL</a></li>
+                        <li><a onclick="chgMenuName(this)" class="dropdown-item" href="#">USDT</a></li>
+                        <li><a onclick="chgMenuName(this)" class="dropdown-item" href="#">USDC</a></li>
+                        <li><a onclick="chgMenuName(this)" class="dropdown-item" href="#">DAI</a></li>
+                        <li><a onclick="chgMenuName(this)" class="dropdown-item" href="#">USDK</a></li>
+                    </ul>
+                </div>
+                </div>
+
+            <div class="col">
+                <!-- 取引所タブ -->
+                <nav class="nav nav-pills flex-column flex-sm-row">
+                    <a onclick="tabChg_GetData(this)" id="firstTab" class="flex-sm-fill text-sm-center nav-link active" aria-current="page">Binance</a>
+                    <a onclick="tabChg_GetData(this)" class="flex-sm-fill text-sm-center nav-link">Okex</a>
+                    <a onclick="tabChg_GetData(this)" class="flex-sm-fill text-sm-center nav-link">KuCoin</a>
+                </nav>
+            </div>
+        </div>
+
+
+    <br>
+
+        <!-- テーブル -->
+        <table class="table table-bordered ">
+
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" onclick="sort(this)" class="sort-up">ぺーア</th>
+                    <th scope="col" onclick="sort(this)" class="sort-up">終値</th>
+                    <th scope="col" onclick="sort(this)" class="sort-up d-none d-lg-table-cell">24時間変動</th>
+                    <th scope="col" onclick="sort(this)" class="sort-up d-none d-lg-table-cell">24時間取引量</th>
+                </tr>
+            </thead>
+            <tbody id="myTable">
+
+<!--            <tr>-->
+<!--                <td class="d-none d-lg-table-cell">1</td>-->
+<!--                <td class="d-none d-lg-table-cell">Mark</td>-->
+<!--                <td class="d-none d-lg-table-cell">Otto</td>-->
+<!--                <td class="d-none d-lg-table-cell">@mdo</td>-->
+<!--                <td class="d-none d-lg-table-cell">@mdo</td>-->
+<!--                <td class="d-none d-lg-table-cell">@mdo</td>-->
+<!--            </tr>-->
+<!--            <tr>-->
+<!--                <td scope="row">1</td>-->
+<!--                <td>Mark</td>-->
+<!--                <td class="d-none d-lg-table-cell">Thornton</td>-->
+<!--                <td class="d-none d-lg-table-cell">@fat</td>-->
+<!--                <td class="d-none d-lg-table-cell">@fat</td>-->
+<!--                <td class="d-none d-lg-table-cell">@fat</td>-->
+<!--            </tr>-->
+<!--            <tr>-->
+<!--                <td scope="row">1</td>-->
+<!--                <td>Larry the Bird</td>-->
+<!--                <td class="d-none d-lg-table-cell">@twitter</td>-->
+<!--                <td class="d-none d-lg-table-cell">@twitter</td>-->
+<!--                <td class="d-none d-lg-table-cell">@twitter</td>-->
+<!--                <td class="d-none d-lg-table-cell">@twitter</td>-->
+<!--            </tr>-->
+
+
+
+            </tbody>
+        </table>
+    </div>
+
+
+
+
+
+</body>
+</html>
