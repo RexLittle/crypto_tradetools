@@ -8,7 +8,6 @@ var exchange = "binance";
 var str;
 var jsonObj;
 var id = null;
-var woqu;
 var xhr;
 
 //below 6 var are json's dataname
@@ -29,8 +28,7 @@ var td;
 var text="";
 
 window.onload=function() {
-    woqu = document.getElementById("myTable");
-    <!-- ドロップダウンメニューにhoverを操作 -->
+    <!-- ドロップダウンメニューにhover -->
     function hover(ele, fn1,fn2) {
         ele.onmouseenter = function(){
             fn1.call(ele);
@@ -201,7 +199,7 @@ function addDataInTable(array){
 
                          }
 
-                                            table.appendChild(fragment);
+                        table.appendChild(fragment);
 
 
                 //                  document.getElementById("myTable").innerHTML = str;
@@ -215,13 +213,6 @@ function addDataInTable(array){
 
 
 
-function modifyTable(){
-//requestAnimationFrame(()=>{
-//woqu.innerHTML = "";
-//});
-//setTimeout(woqu.innerHTML = str, 4000 )
-
-}
 
 
 
