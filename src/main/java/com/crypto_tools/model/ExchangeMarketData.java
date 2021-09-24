@@ -2,7 +2,7 @@ package com.crypto_tools.model;
 
 public class ExchangeMarketData {
     private String pair;
-    private String lastprice;
+    private String lastPrice;
     private String _24hChanges;
     private String _24hVolume;
 
@@ -16,11 +16,11 @@ public class ExchangeMarketData {
     }
 
     public String getLastprice() {
-        return lastprice;
+        return lastPrice;
     }
 
     public void setLastprice(String lastprice) {
-        this.lastprice = lastprice;
+        this.lastPrice = lastprice;
     }
 
     public String get_24hChanges() {
@@ -42,7 +42,7 @@ public class ExchangeMarketData {
     public String toString() {
         return "{" +
                 "pair:'" + pair + '\'' +
-                ", lastPrice:'" + lastprice + '\'' +
+                ", lastPrice:'" + lastPrice + '\'' +
                 ", _24hChanges:'" + _24hChanges + '\'' +
                 ", _24hVolume:'" + _24hVolume + '\'' +
                 '}';

@@ -4,6 +4,7 @@ import com.binance.api.client.*;
 import com.binance.api.client.domain.event.TickerEvent;
 import com.binance.api.client.domain.market.*;
 import com.crypto_tools.exchangapi.ApiServiceGenerator;
+import com.crypto_tools.exchangapi.binance.rest.Binance24hPriceResp;
 import com.crypto_tools.exchangapi.binance.websocket.BinanceAllMarketTickersResp;
 import com.crypto_tools.exchangapi.huobi.rest.HuobiTickerData;
 import com.crypto_tools.exchangapi.huobi.rest.HuobiTickerResp;
@@ -179,7 +180,10 @@ class functionTest {
 	public void binanceRest() {
 		ExchangeFactory factory = ExchangeFactory.createExchangeFactory();
 		BinanceRestClient rest = factory.createBinanceClients().createRestClient();
-		System.out.println(rest.getAllTokenBaseData().get(0).getPrice());
+//		System.out.println(rest.getAllTokenBaseData().toString());
+//
+		List<Binance24hPriceResp> restData = rest.get24hPrice();
+		System.out.println(restData.get(0).getLastPrice());
 	}
 
 	@org.junit.jupiter.api.Test

@@ -42,9 +42,9 @@ public class RestDispatcher {
     }
 
 
-    @RequestMapping(value = "/kucoinMarket", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "/kuCoinMarket", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public List<ExchangeMarketData> kucoinData(){
+    public List<ExchangeMarketData> kuCoinData(){
         return service.kuCoinMarketDataRest();
     }
 
