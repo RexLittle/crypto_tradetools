@@ -1,8 +1,3 @@
-var socket;
-var intervalPing;
-var intervalPong;
-var pong;
-var lockReconnect = false;
 var wsCreateHandler;
 var exchange = "binance";
 var str;
@@ -27,7 +22,16 @@ var tr;
 var td;
 var text="";
 
+//table
+var menu_btm;
+var menu;
+
 window.onload=function() {
+
+    //table
+    menu_btm = document.getElementById("in");
+    menu = document.getElementById("show");
+
     <!-- ドロップダウンメニューにhover -->
     function hover(ele, fn1,fn2) {
         ele.onmouseenter = function(){
@@ -37,14 +41,26 @@ window.onload=function() {
             fn2.call(ele);
         }
     }
-    var menu_btm = document.getElementById("in");
     hover(
     menu_btm,
      function(){
-        menu_btm.click();
+     menu_btm.classList.add("show");
+     menu_btm.setAttribute("data-bs-toggle","dropdown");
+     menu_btm.setAttribute("aria-expanded","true");
+
+     menu.classList.add("show");
+     menu.style ="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 40px);";
+     menu.setAttribute("data-popper-placement","bottom-start");
     },
     function(){
-        menu_btm.click();
+     menu_btm.classList.remove("show");
+     menu_btm.removeAttribute("data-bs-toggle");
+     menu_btm.removeAttribute("expanded");
+
+     menu.classList.remove("show");
+     menu.removeAttribute("style");
+     menu.removeAttribute("data-popper-placement");
+
     })
 
     setInterval(()=>{
@@ -141,6 +157,7 @@ function addDataInTable(array){
                          for(i = 0, len = array.length; i < len; i++){
 
                                 jsonObj = array[i];
+                                 console.log(jsonObj);
                                   for(var name in jsonObj){
                                         switch(name){
                                             case "pair":
@@ -232,7 +249,30 @@ function sort(obj) {
 }
 
 function keepDropdown() {
-        document.getElementById("in").click();
+     menu_btm.classList.add("show");
+     menu_btm.setAttribute("data-bs-toggle","dropdown");
+     menu_btm.setAttribute("aria-expanded","true");
+     menu.classList.add("show");
+     menu.style ="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 40px);";
+     menu.setAttribute("data-popper-placement","bottom-start");
+}
+
+function sortOption(ele) {
+     document.getElementById("in").innerHTML = ele.innerHTML;
+     menu_btm.classList.remove("show");
+     menu_btm.removeAttribute("data-bs-toggle");
+     menu_btm.removeAttribute("expanded");
+     menu.classList.remove("show");
+     menu.removeAttribute("style");
+     menu.removeAttribute("data-popper-placement");
+
+
+     switch(ele.innerHTML.toLowerCase()){
+        case "all":break;
+        case "usdt":break;
+        case "usdc":break;
+        case "dai":break;
+     }
 }
 
 
@@ -272,6 +312,3 @@ function tabChg_GetData(ele){
 
 }
 
-function chgMenuName(ele) {
-    document.getElementById("in").innerHTML = ele.innerHTML;
-}
