@@ -34,3 +34,12 @@ table thead tr th {
 .sort-down-dark:active:after{
     color: rgba(255, 255, 255);
 }
+
+
+.price_up{
+    color: rgba(204, 0, 51);
+}
+
+.price_down{
+    color: rgba(34, 139, 34);
+}

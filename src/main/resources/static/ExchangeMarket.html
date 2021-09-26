@@ -26,7 +26,7 @@
             <div class="collapse navbar-collapse"  id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">通貨相場</a>
+                        <a class="nav-link active" href="http://localhost:8080/byy/ExchangeMarket.html">通貨相場</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">相場比べ</a>
@@ -44,13 +44,13 @@
             <div class="col-3">
                 <div class="btn-group" id = "out" >
                     <button type="button" id = "in"  onclick="keepDropdown" class="btn  dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        ALL
+                        USDT
                     </button>
                     <ul class="dropdown-menu" id = "show" >
-                        <li><a onclick="sortOption(this)" class="dropdown-item" href="#">ALL</a></li>
-                        <li><a onclick="sortOption(this)" class="dropdown-item" href="#">USDT</a></li>
-                        <li><a onclick="sortOption(this)" class="dropdown-item" href="#">USDC</a></li>
-                        <li><a onclick="sortOption(this)" class="dropdown-item" href="#">DAI</a></li>
+                        <li><a onclick="filter(this)" class="dropdown-item">ALL</a></li>
+                        <li><a onclick="filter(this)" class="dropdown-item">USDT</a></li>
+                        <li><a onclick="filter(this)" class="dropdown-item">USDC</a></li>
+                        <li><a onclick="filter(this)" class="dropdown-item">DAI</a></li>
                     </ul>
                 </div>
                 </div>
@@ -73,10 +73,10 @@
 
             <thead class="table-light">
                 <tr>
-                    <th scope="col" onclick="sort(this)" class="sort-up">ぺーア</th>
-                    <th scope="col" onclick="sort(this)" class="sort-up">終値</th>
-                    <th scope="col" onclick="sort(this)" class="sort-up d-none d-lg-table-cell">24時間変動</th>
-                    <th scope="col" onclick="sort(this)" class="sort-up d-none d-lg-table-cell">24時間取引量</th>
+                    <th scope="col" onclick="sort(this)" class="sort-up" id = "pair">ぺーア</th>
+                    <th scope="col" onclick="sort(this)" class="sort-up" id = "last">終値</th>
+                    <th scope="col" onclick="sort(this)" class="sort-up" id = "change">24時間変動</th>
+                    <th scope="col" onclick="sort(this)" class="sort-up" id = "volume">24時間取引量</th>
                 </tr>
             </thead>
 <!--            <tr>-->

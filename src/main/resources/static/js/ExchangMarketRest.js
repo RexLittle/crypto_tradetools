@@ -1,7 +1,6 @@
 var wsCreateHandler;
 var exchange = "binance";
 var str;
-var jsonObj;
 var id = null;
 var xhr;
 
@@ -20,12 +19,14 @@ var table;
 var tableBody = document.createElement("tbody");
 var tr;
 var td;
-var text="";
 
 //table
 var menu_btm;
 var menu;
 
+
+var array_temp;
+var fileter_option = "USDT";
 window.onload=function() {
 
     //table
@@ -147,34 +148,39 @@ window.onload=function() {
 
 
 //ベースとなるテーブルを追加
-function addDataInTable(array){
-
+function addDataInTable(array) {
+    array_temp = array;
+    var new_array = array.filter(item => item["pair"].includes(fileter_option));
+    sortChoose(new_array);
     requestAnimationFrame(()=>{
-
             tableBody.innerHTML="";
+            var jsonName=new Array("pair","lastprice","_24hChanges","_24hVolume");
+            tableBody.id = "myTable";
+            table = document.getElementById("tb");
+            var fragment = document.createDocumentFragment();
+            fragment.appendChild(tableBody);
             if(tableBody.childNodes.length == 0){
             //             str = "";
-                         for(i = 0, len = array.length; i < len; i++){
+                 for(i = 0, len = new_array.length; i < len; i++){
+                          tr = document.createElement("tr");
+                          for(j=1; j<=4; j++){
+                              td = document.createElement("td");
+                              td.innerText = new_array[i][jsonName[j-1]];
+                              td.classList.add("d-none");
+                              td.classList.add("d-lg-table-cell");
+                               if(jsonName[j-1] == "_24hChanges"){
+                                    console.log(td.innerText);
+                                    td.innerText = td.innerText + "%";
+                                    if(new_array[i][jsonName[j-1]] > 0){
+                                        td.classList.add("price_up");
+                                    }else{
+                                        td.classList.add("price_down");
+                                    }
 
-                                jsonObj = array[i];
-                                 console.log(jsonObj);
-                                  for(var name in jsonObj){
-                                        switch(name){
-                                            case "pair":
-                                                pair = jsonObj["pair"];
-                                                break;
-                                            case "lastprice":
-                                                lastprice = parseFloat(jsonObj["lastprice"]);
-                                                break;
-                                            case "_24hChanges":
-                                                _24hChanges = parseFloat(jsonObj["_24hChanges"]);
-                                                break;
-                                            case "_24hVolume":
-                                                _24hVolume = parseFloat(jsonObj["_24hVolume"]);
-                                                break;
-                                            default: break;
-                                        }
-                                }
+                               }
+                              tr.appendChild(td);
+                          }
+                            fragment.getElementById("myTable").appendChild(tr);
 
             //                     str += "<tr>" +
             //                            "<td class= \"d-none d-lg-table-cell\">"+ pair + "</td>" +
@@ -182,70 +188,90 @@ function addDataInTable(array){
             //                            "<td class= \"d-none d-lg-table-cell\">"+ _24hChanges + "</td>" +
             //                            "<td class= \"d-none d-lg-table-cell\">"+ _24hVolume + "</td>" +
             //                            "<tr>";
-
-                           tableBody.id = "myTable";
-                           table = document.getElementById("tb");
-                            var fragment = document.createDocumentFragment();
-                            fragment.appendChild(tableBody);
-                                tr = document.createElement("tr");
-                                 for (j=1; j<=4; j++){
-                                 switch(j){
-
-                                    case 1:
-                                        console.log(pair);
-                                        text = pair;
-                                        break;
-                                    case 2:
-                                        text = lastprice;
-                                        break;
-                                    case 3:
-                                        text = _24hChanges;
-                                        break;
-                                    case 4:
-                                        text = _24hVolume;
-                                        break;
-                                 }
-                                     td = document.createElement("td");
-                                     td.innerText = text;
-                                     td.classList.add("d-none");
-                                     td.classList.add("d-lg-table-cell");
-                                     tr.appendChild(td);
-                                 }
-                                 fragment.getElementById("myTable").appendChild(tr);
-
-
-                         }
-
-                        table.appendChild(fragment);
-
-
-                //                  document.getElementById("myTable").innerHTML = str;
+                 }
             }
-
+                        table.appendChild(fragment);
+                //      document.getElementById("myTable").innerHTML = str;
 
     });
+}
 
 
+function sortChoose(array){
+    var pairId = document.getElementById("pair").className;
+    var lastId = document.getElementById("last").className;
+    var changeId = document.getElementById("change").className;
+    var volumeId = document.getElementById("volume").className;
+
+    if(pairId.includes("sort-up-dark")){
+        array.sort((a,b)=>{
+               return a["pair"].charCodeAt() - b["pair"].charCodeAt();
+            })
+    }else if(pairId.includes("sort-down-dark")){
+        array.sort((a,b)=>{
+           return b["pair"].charCodeAt() - a["pair"].charCodeAt();
+        })
+    }else if(lastId.includes("sort-up-dark")){
+        array.sort((a,b)=>{
+               return a["lastprice"] - b["lastprice"];
+            })
+    }else if(lastId.includes("sort-down-dark")){
+         array.sort((a,b)=>{
+            return b["lastprice"] - a["lastprice"];
+         })
+    }else if(changeId.includes("sort-up-dark")){
+        array.sort((a,b)=>{
+               return a["_24hChanges"] - b["_24hChanges"];
+            })
+    }else if(changeId.includes("sort-down-dark")){
+         array.sort((a,b)=>{
+            return b["_24hChanges"] - a["_24hChanges"];
+         })
+    }else if(volumeId.includes("sort-up-dark")){
+        array.sort((a,b)=>{
+               return a["_24hVolume"] - b["_24hVolume"];
+            })
+    }else if(volumeId.includes("sort-up-dark")){
+         array.sort((a,b)=>{
+            return b["_24hVolume"] - a["_24hVolume"];
+         })
+    }
 }
 
 
 
-
-
-
 <!-- 疑似要素の変更 -->
+    var sortTimes = 0;
+    var name;
+    var sortObj;
 function sort(obj) {
-    var name = obj.className;
-    if(name.indexOf("sort-up-dark")  != -1) {
-        obj.classList.remove("sort-up-dark");
-        obj.classList.add("sort-down-dark");
-    } else if(name.indexOf("sort-down-dark") != -1) {
-        obj.classList.remove("sort-down-dark");
-        obj.classList.add("sort-up");
-    } else if(name.indexOf("sort-up") != -1) {
-        obj.classList.remove("sort-up");
-        obj.classList.add("sort-up-dark");
+    name = obj.className;
+
+    if(sortObj == obj || sortObj == null){
+      if(name.includes("sort-up") && sortTimes == 0){
+                obj.classList.remove("sort-up");
+                obj.classList.add("sort-up-dark");
+                sortTimes = 1;
+            }else if(name.includes("sort-up-dark") && sortTimes == 1){
+                obj.classList.remove("sort-up-dark");
+                obj.classList.add("sort-down-dark");
+            }else if(name.includes("sort-down-dark") && sortTimes == 1) {
+                obj.classList.remove("sort-down-dark");
+                obj.classList.add("sort-up");
+                sortTimes = 0;
+            }
+    }else if(sortObj != obj){
+           if(sortObj.className.includes("sort-up-dark")){
+                    sortObj.classList.remove("sort-up-dark");
+            }else if(sortObj.className.includes("sort-down-dark")){
+                    sortObj.classList.remove("sort-down-dark");
+            }
+            sortObj.classList.add("sort-up");
+            obj.classList.remove("sort-up");
+            obj.classList.add("sort-up-dark");
     }
+    addDataInTable(array_temp);
+    sortObj = obj;
 }
 
 function keepDropdown() {
@@ -257,7 +283,7 @@ function keepDropdown() {
      menu.setAttribute("data-popper-placement","bottom-start");
 }
 
-function sortOption(ele) {
+function filter(ele) {
      document.getElementById("in").innerHTML = ele.innerHTML;
      menu_btm.classList.remove("show");
      menu_btm.removeAttribute("data-bs-toggle");
@@ -266,13 +292,22 @@ function sortOption(ele) {
      menu.removeAttribute("style");
      menu.removeAttribute("data-popper-placement");
 
-
      switch(ele.innerHTML.toLowerCase()){
-        case "all":break;
-        case "usdt":break;
-        case "usdc":break;
-        case "dai":break;
+        case "all":
+            fileter_option = "";
+            break;
+        case "usdt":
+            fileter_option = "USDT";
+            break;
+        case "usdc":
+            fileter_option = "USDC";
+            break;
+        case "dai":
+            fileter_option = "DAI";
+            break;
      }
+
+     addDataInTable(array_temp);
 }
 
 
@@ -283,28 +318,29 @@ var times;
 var btm1;
 var btm2;
 function tabChg_GetData(ele){
-    if(ele.className.indexOf("active")  == -1) {
           if(xhr.readyState==4) {
-                tableBody.remove();
+
+            tableBody.remove();
 //                document.getElementById("myTable").innerHTML = "";
-                exchange =  ele.innerHTML.toLowerCase();
+            exchange =  ele.innerHTML.toLowerCase();
+            if(ele.className.indexOf("active")  == -1) {
+                if(times == null && btm2 == null){
+                    document.getElementById("firstTab").classList.remove("active");
+                    btm1 = ele;
+                    btm1.classList.add("active");
+                    times = 1;
+                }else if(times == 0){
+                    btm2.classList.remove("active");
+                    btm1 = ele;
+                    btm1.classList.add("active");
+                    times = 1;
+                }else if(times == 1){
+                    btm1.classList.remove("active");
+                    btm2 = ele;
+                    btm2.classList.add("active");
+                    times = 0;
+                }
             }
-        if(times == null && btm2 == null){
-            document.getElementById("firstTab").classList.remove("active");
-            btm1 = ele;
-            btm1.classList.add("active");
-            times = 1;
-        }else if(times == 0){
-            btm2.classList.remove("active");
-            btm1 = ele;
-            btm1.classList.add("active");
-            times = 1;
-        }else if(times == 1){
-            btm1.classList.remove("active");
-            btm2 = ele;
-            btm2.classList.add("active");
-            times = 0;
-        }
     }
 
 

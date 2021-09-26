@@ -1,5 +1,8 @@
 package com.crypto_tools.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExchangeMarketData {
     private String pair;
     private String lastPrice;

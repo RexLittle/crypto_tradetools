@@ -28,12 +28,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.*;
 
 @org.springframework.stereotype.Service
 public class ServiceImpl implements Service {
 
     private static Logger log = LoggerFactory.getLogger(ServiceImpl.class);
+    private DecimalFormat decimalFormat = new DecimalFormat("0.##");
 
     @Override
     public List<JsonFormatBean> Arbitrage() {
@@ -148,9 +150,9 @@ public class ServiceImpl implements Service {
         for (int i = 0; i < restData.size(); i++) {
             ExchangeMarketData exchangeMarketData = new ExchangeMarketData();
             exchangeMarketData.setPair(restData.get(i).getSymbol());
-            exchangeMarketData.setLastprice(restData.get(i).getLastPrice());
-            exchangeMarketData.set_24hChanges(restData.get(i).getPriceChangePercent());
-            exchangeMarketData.set_24hVolume(restData.get(i).getVolume());
+            exchangeMarketData.setLastprice(restData.get(i).getLastPrice().replaceAll("0+?$", "").replaceAll("[.]$", ""));
+            exchangeMarketData.set_24hChanges(restData.get(i).getPriceChangePercent().replaceAll("0+?$", "").replaceAll("[.]$", ""));
+            exchangeMarketData.set_24hVolume(restData.get(i).getVolume().replaceAll("0+?$", "").replaceAll("[.]$", ""));
             mData.add(exchangeMarketData);
         }
 //        SessionPool.sendMessage(userId,mData.toString());
@@ -168,7 +170,6 @@ public class ServiceImpl implements Service {
             public void onResponse(List<BinanceAllMarketTickersResp> var1) throws IOException, InterruptedException {
                 for (int i = 0; i < var1.size(); i++) {
                     Thread.sleep(3000);
-                    System.out.println("币安");
                     ExchangeMarketData exchangeMarketData = new ExchangeMarketData();
                     exchangeMarketData.setPair(var1.get(i).getS());
                     exchangeMarketData.setLastprice(var1.get(i).getC());
@@ -194,12 +195,11 @@ public class ServiceImpl implements Service {
         OkexRestClient rest = ExchangeFactory.createExchangeFactory().createOkexClients().createRestClient();
         List<ExchangeMarketData> mData = new ArrayList<>();
         OkexTickerData[] restData = rest.getAllTokenBaseData().getData();
-
         for (int i = 0; i < restData.length; i++) {
             ExchangeMarketData exchangeMarketData = new ExchangeMarketData();
-            exchangeMarketData.setPair(restData[i].getInstId());
+            exchangeMarketData.setPair(restData[i].getInstId().replace("-",""));
             exchangeMarketData.setLastprice(restData[i].getLast());
-            exchangeMarketData.set_24hChanges(String.valueOf((Double.valueOf(restData[i].getLast())
+            exchangeMarketData.set_24hChanges(decimalFormat.format((Double.valueOf(restData[i].getLast())
                     - Double.valueOf(restData[i].getOpen24h())) /Double.valueOf(restData[i].getOpen24h()) * 100));
             exchangeMarketData.set_24hVolume(restData[i].getVol24h());
             mData.add(exchangeMarketData);
@@ -218,11 +218,10 @@ public class ServiceImpl implements Service {
             @Override
             public void onResponse(OkexTickersResp var1) throws InterruptedException, IOException {
                 Thread.sleep(3000);
-                System.out.println("okex正在跑");
                     OkexTickerData[] wsbData = var1.getData();
                     for (int i = 0; i < wsbData.length; i++) {
                         ExchangeMarketData exchangeMarketData = new ExchangeMarketData();
-                        exchangeMarketData.setPair(wsbData[i].getInstId());
+                        exchangeMarketData.setPair(wsbData[i].getInstId().replace("-",""));
                         exchangeMarketData.setLastprice(wsbData[i].getLast());
                         exchangeMarketData.set_24hChanges(String.valueOf((Double.valueOf(wsbData[i].getLast())
                                 - Double.valueOf(wsbData[i].getOpen24h())) /Double.valueOf(wsbData[i].getOpen24h()) * 100));
@@ -254,9 +253,9 @@ public class ServiceImpl implements Service {
         List<ExchangeMarketData> mData = new ArrayList<>();
         for (int i = 0; i < restData.length; i++) {
             ExchangeMarketData exchangeMarketData = new ExchangeMarketData();
-            exchangeMarketData.setPair(restData[i].getSymbol());
+            exchangeMarketData.setPair(restData[i].getSymbol().replace("-",""));
             exchangeMarketData.setLastprice(restData[i].getLast());
-            exchangeMarketData.set_24hChanges(restData[i].getChangeRate());
+            exchangeMarketData.set_24hChanges(decimalFormat.format(Double.valueOf(restData[i].getChangeRate()) * 100 ));
             exchangeMarketData.set_24hVolume(restData[i].getVol());
             mData.add(exchangeMarketData);
         }
@@ -272,10 +271,9 @@ public class ServiceImpl implements Service {
             @Override
             public void onResponse(KuCoinMarketResp var1) throws InterruptedException, IOException {
                 Thread.sleep(3000);
-                System.out.println("kucoin正在跑");
                 KuCoinMarketResp.MarketRespData.MarketData wsbdata = var1.getData().getData();
                 ExchangeMarketData exchangeMarketData = new ExchangeMarketData();
-                exchangeMarketData.setPair(wsbdata.getBaseCurrency()+wsbdata.getQuoteCurrency());
+                exchangeMarketData.setPair(wsbdata.getBaseCurrency()+wsbdata.getQuoteCurrency().replace("-",""));
                 exchangeMarketData.setLastprice(wsbdata.getLastTradedPrice());
                 exchangeMarketData.set_24hChanges(wsbdata.getChangeRate());
                 exchangeMarketData.set_24hVolume(wsbdata.getVol());

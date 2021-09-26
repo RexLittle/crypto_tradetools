@@ -28,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.*;
 
 import static com.crypto_tools.exchangapi.ApiServiceGenerator.userId;
@@ -391,7 +392,7 @@ class functionTest {
 			Closeable ws = factory.createBinanceClients().createWebSocketClient().MarketTickersEvent(new CallBack<List<BinanceAllMarketTickersResp>>() {
 				@Override
 				public void onResponse(List<BinanceAllMarketTickersResp> var1) {
-					System.out.println("币安在跑");
+
 //				System.out.println(var1);
 				}
 
@@ -407,7 +408,6 @@ class functionTest {
 				@Override
 				public void onResponse(OkexTickersResp var1) throws InterruptedException {
 					Thread.sleep(5000);
-					System.out.println("okex在跑");
 //				System.out.println(Arrays.toString(var1.getData()));
 
 				}
@@ -423,6 +423,22 @@ class functionTest {
 			while (true) {
 				Thread.sleep(1000);
 			}
+	}
+
+
+
+	@org.junit.jupiter.api.Test
+	public void testExp(){
+		String str = "30041.37000000";
+		if (str.indexOf(".") > 0) {
+				str = str.replaceAll("0+?$", "");
+				str = str.replaceAll("[.]$", "");
+			}
+
+		DecimalFormat decimalFormat = new DecimalFormat("#.000");
+		String kkj = "1.2343203099809";
+		System.out.println();
+		decimalFormat.format(Double.valueOf(kkj));
 	}
 
 
