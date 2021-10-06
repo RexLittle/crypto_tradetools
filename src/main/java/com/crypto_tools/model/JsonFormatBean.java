@@ -2,22 +2,43 @@ package com.crypto_tools.model;
 
 public class JsonFormatBean {
 
-    String symbol;
+    String pair;
     String exchange1Price;
     String exchange2Price;
+    String priceGap;
+    String priceGapPercent;
+    public String getPriceGap() {
+        return priceGap;
+    }
 
-    public JsonFormatBean(String symbol, String exchange1Price, String exchange2Price) {
-       this.symbol = symbol;
+    public void setPriceGap(String priceGap) {
+        this.priceGap = priceGap;
+    }
+
+    public String getPriceGapPercent() {
+        return priceGapPercent;
+    }
+
+    public void setPriceGapPercent(String priceGapPercent) {
+        this.priceGapPercent = priceGapPercent;
+    }
+
+
+
+    public JsonFormatBean(String pair, String exchange1Price, String exchange2Price,String priceGap,String priceGapPercent) {
+       this.pair = pair;
        this.exchange1Price = exchange1Price;
        this.exchange2Price = exchange2Price;
+       this.priceGap = priceGap;
+       this.priceGapPercent = priceGapPercent;
     }
 
-    public String getSymbol() {
-        return symbol;
+    public String getpair() {
+        return pair;
     }
 
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
+    public void setpair(String pair) {
+        this.pair = pair;
     }
 
     public String getexchange1Price() {
@@ -35,15 +56,17 @@ public class JsonFormatBean {
     public void setexchange2Price(String exchange2Price) {
         exchange2Price = exchange2Price;
     }
-
     @Override
     public String toString() {
-        return "{" +
-                "symbol='" + symbol + '\'' +
+        return "JsonFormatBean{" +
+                "pair='" + pair + '\'' +
                 ", exchange1Price='" + exchange1Price + '\'' +
                 ", exchange2Price='" + exchange2Price + '\'' +
+                ", priceGap='" + priceGap + '\'' +
+                ", priceGapPercent='" + priceGapPercent + '\'' +
                 '}';
     }
+
 
 
 }

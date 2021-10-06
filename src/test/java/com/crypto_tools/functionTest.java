@@ -28,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -441,7 +442,17 @@ class functionTest {
 		decimalFormat.format(Double.valueOf(kkj));
 	}
 
+	@org.junit.jupiter.api.Test
+	public void testNum(){
+		BigDecimal bigDecimal = new BigDecimal("0.00059650");
+		BigDecimal bigDecimal2 = new BigDecimal("0.0005964");
+		bigDecimal.subtract(bigDecimal2);
 
+		String num1 = "0.00059650";
+		String num2 = "0.0005964";
+
+		System.out.println(bigDecimal);
+	}
 
 
 }

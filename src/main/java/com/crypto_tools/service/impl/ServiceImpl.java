@@ -25,11 +25,15 @@ import com.crypto_tools.exchangapi.okex.rest.OkexTickerResp;
 import com.crypto_tools.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class ServiceImpl implements Service {
@@ -38,105 +42,97 @@ public class ServiceImpl implements Service {
     private DecimalFormat decimalFormat = new DecimalFormat("0.##");
 
     @Override
-    public List<JsonFormatBean> Arbitrage() {
-        //Biance
-
-        BinanceRestClient biClient =  ExchangeFactory.createExchangeFactory().createBinanceClients().createRestClient();
-        //获取全部交易对
-        List<BinanceTickeResp> biAllPrices = biClient.getAllTokenBaseData();
-        String binanceData = biAllPrices.toString().replaceAll("BinanceTickerData|\\[|\\]|symbol=|price=","")
-                .replace(" ","");
-        String[] binanceDatabArray = binanceData.split(",");
-        LinkedHashMap<String, String> binanceDataMap = new LinkedHashMap<>();
-        int i = 0;
-        int j = 1;
-        for (i = 0; i < binanceDatabArray.length-1; i=i+2) {
-            binanceDataMap.put(binanceDatabArray[i],binanceDatabArray[j]);
-            j= j+2;
+    public List<JsonFormatBean> compare(String ex1,String ex2) {
+        ExchangeFactory exchangeFactory = ExchangeFactory.createExchangeFactory();
+        BinanceRestClient binanceRest;
+        OkexRestClient okexRest;
+        KuCoinRestClient kuCoinRest;
+        List<Binance24hPriceResp> binanceData;
+        OkexTickerData[] okexData;
+        TickerData[] kuCoinData;
+        LinkedHashMap<String, String> dataMap1 = new LinkedHashMap<>();
+        LinkedHashMap<String, String> dataMap2 = new LinkedHashMap<>();
+        switch(ex1){
+            case "binance":
+                binanceRest = exchangeFactory.createBinanceClients().createRestClient();
+                binanceData = binanceRest.get24hPrice();
+                for(Binance24hPriceResp data:binanceData){dataMap1.put(data.getSymbol(),data.getLastPrice());}
+                break;
+            case "okex":
+                okexRest = exchangeFactory.createOkexClients().createRestClient();
+                okexData = okexRest.getAllTokenBaseData().getData();
+                for(OkexTickerData data:okexData){
+                    dataMap1.put(data.getInstId().replace("-",""),data.getLast());
+                }
+                break;
+            case "kucoin":
+                kuCoinRest = exchangeFactory.createKuCoinClients().createRestClient();
+                kuCoinData = kuCoinRest.getAllTokenData().getData().getTicker();
+                for(TickerData data:kuCoinData){dataMap1.put(data.getSymbol().replace("-",""),data.getLast());}
+                break;
+            default:break;
         }
 
-        System.out.println(binanceData);
-
-
-        //Bithumb
-        OkexTickerResp okRest = ExchangeFactory.createExchangeFactory().createOkexClients().createRestClient().getAllTokenBaseData();
-        OkexTickerData[] bitAllPrices = okRest.getData();
-        LinkedHashMap<String, String> bithumbMap = new LinkedHashMap<>();
-        int k = 0;
-        while (true) {
-            try {
-                bithumbMap.put(bitAllPrices[k].getInstId().replace("-",""),bitAllPrices[k].getLast());
-                k++;
-            } catch (ArrayIndexOutOfBoundsException e) {
+        switch(ex2){
+            case "binance":
+                binanceRest = exchangeFactory.createBinanceClients().createRestClient();
+                binanceData = binanceRest.get24hPrice();
+                for(Binance24hPriceResp data:binanceData){dataMap2.put(data.getSymbol(),data.getLastPrice());}
                 break;
-            }
+            case "okex":
+                okexRest = exchangeFactory.createOkexClients().createRestClient();
+                okexData = okexRest.getAllTokenBaseData().getData();
+                for(OkexTickerData data:okexData){
+                    dataMap2.put(data.getInstId().replace("-",""),data.getLast());
+                }
+                break;
+            case "kucoin":
+                kuCoinRest = exchangeFactory.createKuCoinClients().createRestClient();
+                kuCoinData = kuCoinRest.getAllTokenData().getData().getTicker();
+                for(TickerData data:kuCoinData){dataMap2.put(data.getSymbol().replace("-",""),data.getLast());}
+                break;
+            default:break;
+
         }
 
         //両取引所の比べ
-        Iterator<String> BiIter = binanceDataMap.keySet().iterator();
-        Iterator<String> BitIter = bithumbMap.keySet().iterator();
-
+        Iterator<String> dm1 = dataMap1.keySet().iterator();
+        Iterator<String> dm2 = dataMap2.keySet().iterator();
+        String ex1price;
+        String ex2price;
+        Double ex1priceNum;
+        Double ex2priceNum;
+        BigDecimal gap;
+        BigDecimal gapPercent;
+        BigDecimal subtract1;
+        BigDecimal subtract2;
         List<JsonFormatBean> jsonFormatBeans = new ArrayList<>();
-        while(BiIter.hasNext()) {
-            String biKey = BiIter.next();
-            while (BitIter.hasNext()) {
-                String bitKey = BitIter.next();
-                if(biKey.equals(bitKey)) {
-                    jsonFormatBeans.add(new JsonFormatBean(biKey,binanceDataMap.get(biKey),bithumbMap.get(bitKey)));
+        while(dm1.hasNext()) {
+            String dm1Key = dm1.next();
+            while (dm2.hasNext()) {
+                String dm2Key = dm2.next();
+                if(dm1Key.equals(dm2Key)) {
+                    ex1price = dataMap1.get(dm1Key).replaceAll("0+?$", "").replaceAll("[.]$", "");
+                    ex2price = dataMap2.get(dm2Key).replaceAll("0+?$", "").replaceAll("[.]$", "");
+                    ex1priceNum = Double.valueOf(ex1price);
+                    ex2priceNum  = Double.valueOf(ex2price);
+                    subtract1 = new BigDecimal(ex1price).subtract(new BigDecimal(ex2price));
+                    subtract2 = new BigDecimal(ex2price).subtract(new BigDecimal(ex1price));
+                    gap = ex1priceNum>ex2priceNum?subtract1:subtract2;
+                    if (0 != BigDecimal.ZERO.compareTo(new BigDecimal(ex1price)) && 0 != BigDecimal.ZERO.compareTo(new BigDecimal(ex2price))) {
+                            gapPercent = ex1priceNum>ex2priceNum?subtract1.divide(new BigDecimal(ex2price), 4).multiply(new BigDecimal("100")):
+                                    subtract2.divide(new BigDecimal(ex1price), 4).multiply(new BigDecimal("100"));
+                    }else{
+                        gapPercent = new BigDecimal("0");
+                    }
+
+
+                    jsonFormatBeans.add(new JsonFormatBean(dm1Key,ex1price,ex2price,
+                            gap.toString(),gapPercent.toString()));
                 }
             }
-            BitIter = bithumbMap.keySet().iterator();
+            dm2 = dataMap2.keySet().iterator();
         }
-        /**
-         *     //Biance
-         *         BinanceApiClientFactory biFactory = BinanceApiClientFactory.newInstance();
-         *         BinanceApiRestClient biClient = biFactory.newRestClient();
-         *         //获取全部交易对
-         *         List<TickerPrice> biAllPrices = biClient.getAllPrices();
-         *         String binanceData = biAllPrices.toString().replaceAll("TickerPrice|\\[|\\]|symbol=|price=","")
-         *                 .replace(" ","");
-         *         String[] binanceDatabArray = binanceData.split(",");
-         *         LinkedHashMap<String, String> binanceDataMap = new LinkedHashMap<>();
-         *         int i = 0;
-         *         int j = 1;
-         *         for (i = 0; i < binanceDatabArray.length-1; i=i+2) {
-         *             binanceDataMap.put(binanceDatabArray[i],binanceDatabArray[j]);
-         *             j= j+2;
-         *         }
-         *
-         *
-         *         //Bithumb
-         *         BithumbApiClientFactory bitFactory = BithumbApiClientFactory.newInstance();
-         *         BithumbApiRestClient bitClient = bitFactory.newRestClient();
-         *         com.price_gap_site.bithumb.bean.TickerPrice bitAllPrices = bitClient.getAllPrices();
-         *         LinkedHashMap<String, String> bithumbMap = new LinkedHashMap<>();
-         *         int k = 0;
-         *         while (true) {
-         *             try {
-         *                 bithumbMap.put(bitAllPrices.getData()[k].getS().replace("-",""),bitAllPrices.getData()[k].getC());
-         *                 k++;
-         *             } catch (ArrayIndexOutOfBoundsException e) {
-         *                 break;
-         *             }
-         *         }
-         *
-         *
-         *         //両取引所の比べ
-         *         Iterator<String> BiIter = binanceDataMap.keySet().iterator();
-         *         Iterator<String> BitIter = bithumbMap.keySet().iterator();
-         *         List<JsonFormatBean> jsonFormatBeans = new ArrayList<>();
-         *         while(BiIter.hasNext()) {
-         *             String biKey = BiIter.next();
-         *             while (BitIter.hasNext()) {
-         *                 String bitKey = BitIter.next();
-         *                 if(biKey.equals(bitKey)) {
-         *                     jsonFormatBeans.add(new JsonFormatBean(biKey,binanceDataMap.get(biKey),bithumbMap.get(bitKey)));
-         *                 }
-         *             }
-         *             BitIter = bithumbMap.keySet().iterator();
-         *         }
-         *
-         */
 
         return jsonFormatBeans;
 
@@ -189,6 +185,8 @@ public class ServiceImpl implements Service {
         });
          return wb;
     }
+
+
 
     @Override
     public List<ExchangeMarketData> okexMarketDataRest() {
@@ -245,6 +243,7 @@ public class ServiceImpl implements Service {
         return wb;
 
     }
+
 
     @Override
     public List<ExchangeMarketData> kuCoinMarketDataRest() {

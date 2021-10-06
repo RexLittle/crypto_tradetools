@@ -1,21 +1,9 @@
-var wsCreateHandler;
 var exchange = "binance";
 var str;
-var id = null;
 var xhr;
-
-//below 6 var are json's dataname
-var pair;
-var lastprice;
-var _24hChanges;
-var _24hHigh;
-var _24hLow;
-var _24hVolume;
-var fragment = document.createDocumentFragment();
 
 
 //function addDataInTable
-var table;
 var tableBody = document.createElement("tbody");
 var tr;
 var td;
@@ -29,7 +17,6 @@ var array_temp;
 var fileter_option = "USDT";
 window.onload=function() {
 
-    //table
     menu_btm = document.getElementById("in");
     menu = document.getElementById("show");
 
@@ -101,53 +88,10 @@ window.onload=function() {
             }
     }, 3000);
 
-
-
-//        var jsonStr = xhr.responseText;
-
-//        var ex1;
-//        var ex2;
-//        var numLength;
-//        var percent;
-//        var difference;
-//            var data = "<tr>" +
-//                        "<td>通貨名</td>" +
-//                        "<td>Binance</td>" +
-//                        "<td>Bithumb</td>" +
-//                        "<td>スプレッド</td>" +
-//                        "<td>パーセンテージ</td>" +
-//                        "</tr>";
-             //行数Num指定
-//             for(var i = 1; i <= jsonObj.length; i++) {
-//                 ex1 = parseFloat(jsonObj[i-1].exchange1Price);
-//                 ex2 = parseFloat(jsonObj[i-1].exchange2Price);
-//
-//                 if(jsonObj[i-1].exchange1Price < jsonObj[i-1].exchange2Price) {
-//                       numLength = ex1.toString().substring(ex1.toString().indexOf('.'),ex1.toString().length).length;
-//                       difference = Math.abs(ex2 - ex1).toFixed(numLength);;
-//                       percent = (difference/ex1 * 100).toFixed(2);
-//                 } else {
-//                       numLength = ex2.toString().substring(ex2.toString().indexOf('.'),ex2.toString().length).length;
-//                       difference = Math.abs(ex1 - ex2).toFixed(numLength);;
-//                       percent = (difference/ex2 * 100).toFixed(2);
-//                 }
-//                 data += "<tr>";
-//                 data += "<td>" + jsonObj[i-1].symbol +"</td>";
-//                 data += "<td>" + ex1 +"</td>";
-//                 data += "<td>" + ex2 +"</td>";
-//                 data += "<td>" + difference + "</td>";
-//
-//
-//                 data += "<td>" + percent +"%</td>";
-//                 data += "</tr>";
-//             }
-//             document.getElementById("myTable").innerHTML = data;
-
-
 }
 
 
-//ベースとなるテーブルを追加
+<!-- テーブルの作成 -->
 function addDataInTable(array) {
     array_temp = array;
     var new_array = array.filter(item => item["pair"].includes(fileter_option));
@@ -161,7 +105,7 @@ function addDataInTable(array) {
             fragment.appendChild(tableBody);
             if(tableBody.childNodes.length == 0){
             //             str = "";
-                 for(i = 0, len = new_array.length; i < len; i++){
+                 for(i = 0; i < new_array.length; i++){
                           tr = document.createElement("tr");
                           for(j=1; j<=4; j++){
                               td = document.createElement("td");
@@ -169,7 +113,6 @@ function addDataInTable(array) {
                               td.classList.add("d-none");
                               td.classList.add("d-lg-table-cell");
                                if(jsonName[j-1] == "_24hChanges"){
-                                    console.log(td.innerText);
                                     td.innerText = td.innerText + "%";
                                     if(new_array[i][jsonName[j-1]] > 0){
                                         td.classList.add("price_up");
@@ -181,57 +124,49 @@ function addDataInTable(array) {
                               tr.appendChild(td);
                           }
                             fragment.getElementById("myTable").appendChild(tr);
-
-            //                     str += "<tr>" +
-            //                            "<td class= \"d-none d-lg-table-cell\">"+ pair + "</td>" +
-            //                            "<td class= \"d-none d-lg-table-cell\">"+ lastprice + "</td>" +
-            //                            "<td class= \"d-none d-lg-table-cell\">"+ _24hChanges + "</td>" +
-            //                            "<td class= \"d-none d-lg-table-cell\">"+ _24hVolume + "</td>" +
-            //                            "<tr>";
                  }
             }
                         table.appendChild(fragment);
-                //      document.getElementById("myTable").innerHTML = str;
 
     });
 }
 
-
+<!-- テーブルソートの選択 -->
 function sortChoose(array){
-    var pairId = document.getElementById("pair").className;
-    var lastId = document.getElementById("last").className;
-    var changeId = document.getElementById("change").className;
-    var volumeId = document.getElementById("volume").className;
+    var pairClassName = document.getElementById("pair").className;
+    var lastClassName = document.getElementById("last").className;
+    var changeClassName = document.getElementById("change").className;
+    var volumeClassName = document.getElementById("volume").className;
 
-    if(pairId.includes("sort-up-dark")){
+    if(pairClassName.includes("sort-up-dark")){
         array.sort((a,b)=>{
                return a["pair"].charCodeAt() - b["pair"].charCodeAt();
             })
-    }else if(pairId.includes("sort-down-dark")){
+    }else if(pairClassName.includes("sort-down-dark")){
         array.sort((a,b)=>{
            return b["pair"].charCodeAt() - a["pair"].charCodeAt();
         })
-    }else if(lastId.includes("sort-up-dark")){
+    }else if(lastClassName.includes("sort-up-dark")){
         array.sort((a,b)=>{
                return a["lastprice"] - b["lastprice"];
             })
-    }else if(lastId.includes("sort-down-dark")){
+    }else if(lastClassName.includes("sort-down-dark")){
          array.sort((a,b)=>{
             return b["lastprice"] - a["lastprice"];
          })
-    }else if(changeId.includes("sort-up-dark")){
+    }else if(changeClassName.includes("sort-up-dark")){
         array.sort((a,b)=>{
                return a["_24hChanges"] - b["_24hChanges"];
             })
-    }else if(changeId.includes("sort-down-dark")){
+    }else if(changeClassName.includes("sort-down-dark")){
          array.sort((a,b)=>{
             return b["_24hChanges"] - a["_24hChanges"];
          })
-    }else if(volumeId.includes("sort-up-dark")){
+    }else if(volumeClassName.includes("sort-up-dark")){
         array.sort((a,b)=>{
                return a["_24hVolume"] - b["_24hVolume"];
             })
-    }else if(volumeId.includes("sort-up-dark")){
+    }else if(volumeClassName.includes("sort-up-dark")){
          array.sort((a,b)=>{
             return b["_24hVolume"] - a["_24hVolume"];
          })
@@ -274,6 +209,7 @@ function sort(obj) {
     sortObj = obj;
 }
 
+<!-- ドロップダウンメニューのキープ -->
 function keepDropdown() {
      menu_btm.classList.add("show");
      menu_btm.setAttribute("data-bs-toggle","dropdown");
@@ -283,6 +219,7 @@ function keepDropdown() {
      menu.setAttribute("data-popper-placement","bottom-start");
 }
 
+<!-- 選択されたコインの絞り -->
 function filter(ele) {
      document.getElementById("in").innerHTML = ele.innerHTML;
      menu_btm.classList.remove("show");
@@ -315,36 +252,32 @@ function filter(ele) {
 
 <!-- タブ様式変更と選択された取引所のデータ取得 -->
 var times;
-var btm1;
-var btm2;
+var bt1;
+var bt2;
 function tabChg_GetData(ele){
           if(xhr.readyState==4) {
 
             tableBody.remove();
 //                document.getElementById("myTable").innerHTML = "";
             exchange =  ele.innerHTML.toLowerCase();
-            if(ele.className.indexOf("active")  == -1) {
-                if(times == null && btm2 == null){
+            if(!ele.className.includes("active")) {
+                if(times == null && bt2 == null){
                     document.getElementById("firstTab").classList.remove("active");
-                    btm1 = ele;
-                    btm1.classList.add("active");
+                    bt1 = ele;
+                    bt1.classList.add("active");
                     times = 1;
                 }else if(times == 0){
-                    btm2.classList.remove("active");
-                    btm1 = ele;
-                    btm1.classList.add("active");
+                    bt2.classList.remove("active");
+                    bt1 = ele;
+                    bt1.classList.add("active");
                     times = 1;
                 }else if(times == 1){
-                    btm1.classList.remove("active");
-                    btm2 = ele;
-                    btm2.classList.add("active");
+                    bt1.classList.remove("active");
+                    bt2 = ele;
+                    bt2.classList.add("active");
                     times = 0;
                 }
             }
     }
-
-
-
-
 }
 

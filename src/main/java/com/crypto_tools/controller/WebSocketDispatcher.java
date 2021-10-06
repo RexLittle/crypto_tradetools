@@ -29,11 +29,8 @@ public class WebSocketDispatcher {
 //            timer.scheduleAtFixedRate(new TimerTask() {
 //                @SneakyThrows
 //                public void run() {
-//                    log.info(""+wb);
-//                    log.info("我执行了");
 //                    if(!SessionPool.havingSession(userId)){
 //                        wb.close();
-//                        log.info("我关闭了");
 //                    }
 //                }
 //            }, 1000, 2000);
