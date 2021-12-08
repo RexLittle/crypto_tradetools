@@ -5,6 +5,7 @@
 # サイトURL
 http://49.135.32.11:2333/crypto_tradetools-0.0.1/ExchangeMarket.html
 - ※このサイトはモバイル対応しておりません.
+- ※上記のurlを開く際、httpがhttpsに自動的に変更されるため、sの削除する必要があります.
 # 使用技術
 - Java11
   - jackson 2.5.0
