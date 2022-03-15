@@ -3,7 +3,8 @@
 # 経緯
 自分が学習するため、何らかのポートフォリオ作成しょうと思ったら、仮想通貨取引所の価額をまとめたアプリがあればいいと思って、このサイトを作成することになりました。
 # サイトURL
-http://www.cexprice.com:2333/crypto_tradetools-0.0.1/ExchangeMarket.html
+#ネット環境速度の影響になるため現在使用停止中
+( http://www.cexprice.com:2333/crypto_tradetools-0.0.1/ExchangeMarket.html )
 - ※このサイトはモバイル対応しておりません.
 - ※上記のurlを開く際、httpがhttpsに自動的に変更されるため、sの削除する必要があります.
 - ※もしサイト反応なしの場合、おおよそ20分後アクセスお願いいたします(DNS更新の時間は不特定)
